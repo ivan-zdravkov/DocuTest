@@ -1,0 +1,7 @@
+﻿CREATE TABLE [dbo].[Document]
+(
+	[Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY, 
+    [Name] NVARCHAR(260) NOT NULL, 
+    [DocumentTypeId] UNIQUEIDENTIFIER NOT NULL REFERENCES [dbo].[DocumentType], 
+    [UserId] UNIQUEIDENTIFIER NOT NULL REFERENCES [dbo].[User]
+)

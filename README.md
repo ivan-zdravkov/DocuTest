@@ -23,7 +23,7 @@ Also consider the following:
 | Name | Type | Required | PK | FK |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Id | UNIQUEIDENTIFIER | ✓ | ✓ |  |
-| Name | NVARCHAR(100) | ✓ |  |  |
+| Name | NVARCHAR(255) | ✓ |  |  |
 | Email | NVARCHAR(255) | ✓ |  |  |
 
 ## Document
@@ -32,7 +32,7 @@ Also consider the following:
 | Id | UNIQUEIDENTIFIER | ✓ | ✓ |  |
 | Name | NVARCHAR(260) | ✓ |  |  |
 | DocumentTypeId | UNIQUEIDENTIFIER | ✓ |  | DocumentType |
-| DocumentTypeId | UNIQUEIDENTIFIER | ✓ |  | User |
+| UserId | UNIQUEIDENTIFIER | ✓ |  | User |
 
 ## File
 | Name | Type | Required | PK | FK |
@@ -52,7 +52,7 @@ Also consider the following:
 | Name | Type | Required | PK | FK |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Id | UNIQUEIDENTIFIER | ✓ | ✓ |  |
-| Name | NVARCHAR(260) | ✓ |  |  |
+| Name | NVARCHAR(255) | ✓ |  |  |
 
 ## Metadata
 | Name | Type | Required | PK | FK |
