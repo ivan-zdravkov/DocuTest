@@ -11,7 +11,18 @@ builder.Services.AddSwaggerGen();
 
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-DataGenerator.Generate(connectionString).Wait();
+Boolean.TryParse(builder.Configuration["GenerateData"], out bool generateData);
+
+if (generateData)
+{
+    DataGenerator.Generate(connectionString).Wait();
+
+    Console.WriteLine("Data generation completed.");
+}
+else
+{
+    Console.WriteLine("Data generation skipped.");
+}
 
 var app = builder.Build();
 
