@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DocuTest.Data.Main.DAL\DocuTest.Data.Main.DAL.csproj" />
     <ProjectReference Include="..\DocuTest.Shared\DocuTest.Shared.csproj" />
   </ItemGroup>
 

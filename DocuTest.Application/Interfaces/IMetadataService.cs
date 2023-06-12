@@ -1,9 +1,12 @@
-﻿namespace DocuTest.Application.Interfaces
+﻿using DocuTest.Shared.Models;
+
+namespace DocuTest.Application.Interfaces
 {
     public interface IMetadataService
     {
-        public Task<Guid> Insert(Guid fileId, string key, string value);
-        public Task Update(Guid fileId, string key, string value);
-        public Task Delete(Guid fileId, string key);
+        Task Insert(Metadata metadata);
+        Task Update(Metadata metadata);
+        Task Delete(Metadata metadata);
+        Task Delete(Guid fileId, string key);
     }
 }

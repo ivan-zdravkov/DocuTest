@@ -4,10 +4,11 @@ namespace DocuTest.Application.Interfaces
 {
     public interface IDocumentService
     {
-        public Task<Document> Get(Guid documentId);
-        public Task<IEnumerable<Document>> GetByMetadata(string key, string value);
-        public Task<Guid> Insert(Document document);
-        public Task Update(Document document);
-        public Task Delete(Guid documentId);
+        Task<Document> Get(Guid documentId);
+        Task<IEnumerable<Document>> Get(IEnumerable<Guid> documentIds);
+        Task<IEnumerable<Document>> GetByMetadata(string key, string value);
+        Task<Guid> Insert(Document document);
+        Task Update(Document document);
+        Task Delete(Guid documentId);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DocuTest.Application.Interfaces;
+using DocuTest.Shared.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DocuTest.Api.Controllers
@@ -15,14 +16,16 @@ namespace DocuTest.Api.Controllers
         }
 
         [HttpPost]
-        [Route("{fileId}/{key}")]
-        public async Task<Guid> Insert(Guid fileId, string key, string value) =>
-            await this.metadataService.Insert(fileId, key, value);
+        public async Task Insert(Metadata metadata) =>
+            await this.metadataService.Insert(metadata);
 
         [HttpPut]
-        [Route("{fileId}/{key}")]
-        public async Task Update(Guid fileId, string key, string value) =>
-            await this.metadataService.Update(fileId, key, value);
+        public async Task Update(Metadata metadata) =>
+            await this.metadataService.Update(metadata);
+
+        [HttpDelete]
+        public async Task Delete(Metadata metadata) =>
+            await this.metadataService.Delete(metadata);
 
         [HttpDelete]
         [Route("{fileId}/{key}")]
