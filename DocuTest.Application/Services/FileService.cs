@@ -19,7 +19,7 @@ namespace DocuTest.Application.Services
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file)
+        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -29,9 +29,9 @@ namespace DocuTest.Application.Services
 
             try
             {
-                Guid fileId = await this.fileRepository.Insert(transaction, documentId, file);
+                Guid fileId = await this.fileRepository.Insert(transaction, documentId, file, ct);
 
-                await this.metadataRepository.Insert(transaction, file.Metadata);
+                await this.metadataRepository.Insert(transaction, file.Metadata, ct);
 
                 await transaction.CommitAsync();
 
@@ -44,7 +44,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        public async Task Update(Shared.Models.File file)
+        public async Task Update(Shared.Models.File file, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -54,13 +54,13 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.fileRepository.Update(transaction, file);
+                await this.fileRepository.Update(transaction, file, ct);
 
                 //An arguably more efficient way to do this could be to compare the metadata and only update the records that have actually changed.
                 //I decided agains this, since we currently don't have audit fields and we also have a composite primary key,
                 //so we have no actual loss of data, but we would introduce quite a bit of complexity.
-                await this.metadataRepository.Delete(transaction, file.Id);
-                await this.metadataRepository.Insert(transaction, file.Metadata);
+                await this.metadataRepository.Delete(transaction, file.Id, ct);
+                await this.metadataRepository.Insert(transaction, file.Metadata, ct);
             }
             catch (Exception)
             {
@@ -69,7 +69,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        public async Task Delete(Guid fileId)
+        public async Task Delete(Guid fileId, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -79,8 +79,8 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.metadataRepository.Delete(transaction, fileId);
-                await this.fileRepository.Delete(transaction, fileId);
+                await this.metadataRepository.Delete(transaction, fileId, ct);
+                await this.fileRepository.Delete(transaction, fileId, ct);
 
                 await transaction.CommitAsync();
             }

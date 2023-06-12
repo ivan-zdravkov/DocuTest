@@ -7,27 +7,27 @@ namespace DocuTest.Data.Main.DAL.Repositories
 {
     public class DocumentRepository : IDocumentRepository
     {
-        public Task Delete(DbTransaction transaction, Guid documentId)
+        public Task Delete(DbTransaction transaction, Guid documentId, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Document> Get(SqlConnection connection, Guid documentId)
+        public Task<Document> Get(SqlConnection connection, Guid documentId, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Document>> Get(SqlConnection connection, IEnumerable<Guid> documentIds)
+        public Task<IEnumerable<Document>> Get(SqlConnection connection, IEnumerable<Guid> documentIds, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Guid> Insert(DbTransaction transaction, Document document)
+        public Task<Guid> Insert(DbTransaction transaction, Document document, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Update(DbTransaction transaction, Document document)
+        public Task Update(DbTransaction transaction, Document document, CancellationToken ct)
         {
             throw new NotImplementedException();
         }

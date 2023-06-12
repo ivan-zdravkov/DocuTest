@@ -6,10 +6,10 @@ namespace DocuTest.Data.Main.DAL.Interfaces
 {
     public interface IDocumentRepository
     {
-        Task<Document> Get(SqlConnection connection, Guid documentId);
-        Task<IEnumerable<Document>> Get(SqlConnection connection, IEnumerable<Guid> documentIds);
-        Task<Guid> Insert(DbTransaction transaction, Document document);
-        Task Update(DbTransaction transaction, Document document);
-        Task Delete(DbTransaction transaction, Guid documentId);
+        Task<Document> Get(SqlConnection connection, Guid documentId, CancellationToken ct);
+        Task<IEnumerable<Document>> Get(SqlConnection connection, IEnumerable<Guid> documentIds, CancellationToken ct);
+        Task<Guid> Insert(DbTransaction transaction, Document document, CancellationToken ct);
+        Task Update(DbTransaction transaction, Document document, CancellationToken ct);
+        Task Delete(DbTransaction transaction, Guid documentId, CancellationToken ct);
     }
 }

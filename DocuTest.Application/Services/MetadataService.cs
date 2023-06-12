@@ -17,7 +17,7 @@ namespace DocuTest.Application.Services
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task Insert(Metadata metadata)
+        public async Task Insert(Metadata metadata, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -27,7 +27,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.metadataRepository.Insert(transaction, metadata);
+                await this.metadataRepository.Insert(transaction, metadata, ct);
 
                 await transaction.CommitAsync();
             }
@@ -38,7 +38,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        public async Task Update(Metadata metadata)
+        public async Task Update(Metadata metadata, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -48,7 +48,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.metadataRepository.Update(transaction, metadata);
+                await this.metadataRepository.Update(transaction, metadata, ct);
             }
             catch (Exception)
             {
@@ -57,7 +57,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        public async Task Delete(Metadata metadata)
+        public async Task Delete(Metadata metadata, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -67,7 +67,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.metadataRepository.Delete(transaction, metadata);
+                await this.metadataRepository.Delete(transaction, metadata, ct);
             }
             catch (Exception)
             {
@@ -76,7 +76,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        public async Task Delete(Guid fileId, string key)
+        public async Task Delete(Guid fileId, string key, CancellationToken ct)
         {
             using SqlConnection connection = this.connectionFactory.Create();
 
@@ -86,7 +86,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.metadataRepository.Delete(transaction, fileId, key);
+                await this.metadataRepository.Delete(transaction, fileId, key, ct);
             }
             catch (Exception)
             {

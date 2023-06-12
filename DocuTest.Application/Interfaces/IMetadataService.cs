@@ -4,9 +4,9 @@ namespace DocuTest.Application.Interfaces
 {
     public interface IMetadataService
     {
-        Task Insert(Metadata metadata);
-        Task Update(Metadata metadata);
-        Task Delete(Metadata metadata);
-        Task Delete(Guid fileId, string key);
+        Task Insert(Metadata metadata, CancellationToken ct);
+        Task Update(Metadata metadata, CancellationToken ct);
+        Task Delete(Metadata metadata, CancellationToken ct);
+        Task Delete(Guid fileId, string key, CancellationToken ct);
     }
 }

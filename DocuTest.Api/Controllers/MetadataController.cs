@@ -16,20 +16,20 @@ namespace DocuTest.Api.Controllers
         }
 
         [HttpPost]
-        public async Task Insert(Metadata metadata) =>
-            await this.metadataService.Insert(metadata);
+        public async Task Insert(Metadata metadata, CancellationToken ct) =>
+            await this.metadataService.Insert(metadata, ct);
 
         [HttpPut]
-        public async Task Update(Metadata metadata) =>
-            await this.metadataService.Update(metadata);
+        public async Task Update(Metadata metadata, CancellationToken ct) =>
+            await this.metadataService.Update(metadata, ct);
 
         [HttpDelete]
-        public async Task Delete(Metadata metadata) =>
-            await this.metadataService.Delete(metadata);
+        public async Task Delete(Metadata metadata, CancellationToken ct) =>
+            await this.metadataService.Delete(metadata, ct);
 
         [HttpDelete]
         [Route("{fileId}/{key}")]
-        public async Task Delete(Guid fileId, string key) =>
-            await this.metadataService.Delete(fileId, key);
+        public async Task Delete(Guid fileId, string key, CancellationToken ct) =>
+            await this.metadataService.Delete(fileId, key, ct);
     }
 }

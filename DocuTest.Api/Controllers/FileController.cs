@@ -16,16 +16,16 @@ namespace DocuTest.Api.Controllers
 
         [HttpPost]
         [Route("{documentId}")]
-        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file) =>
-            await this.fileService.Insert(documentId, file);
+        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file, CancellationToken ct) =>
+            await this.fileService.Insert(documentId, file, ct);
 
         [HttpPut]
-        public async Task Update(Shared.Models.File file) =>
-            await this.fileService.Update(file);
+        public async Task Update(Shared.Models.File file, CancellationToken ct) =>
+            await this.fileService.Update(file, ct);
 
         [HttpDelete]
         [Route("{fileId}")]
-        public async Task Delete(Guid fileId) =>
-            await this.fileService.Delete(fileId);
+        public async Task Delete(Guid fileId, CancellationToken ct) =>
+            await this.fileService.Delete(fileId, ct);
     }
 }
