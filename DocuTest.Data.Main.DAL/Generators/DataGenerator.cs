@@ -71,13 +71,13 @@ public static class DataGenerator
                             }
                         }
 
-                        await transaction.CommitAsync();
+                        transaction.Commit();
 
                         ReleaseConnection(connectionPool, connection);
                     }
                     catch (Exception ex)
                     {
-                        await transaction.RollbackAsync();
+                        transaction.Commit();
 
                         ReleaseConnection(connectionPool, connection);
 

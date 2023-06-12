@@ -1,53 +1,52 @@
 ﻿using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Shared.Models;
-using System.Data.Common;
-using System.Data.SqlClient;
+using System.Data;
 
 namespace DocuTest.Data.Main.DAL.Repositories
 {
     public class MetadataRepository : IMetadataRepository
     {
-        public Task Delete(DbTransaction transaction, Guid fileId, CancellationToken ct)
+        public Task Delete(IDbTransaction transaction, Guid fileId, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Delete(DbTransaction transaction, IEnumerable<Guid> fileIds, CancellationToken ct)
+        public Task Delete(IDbTransaction transaction, IEnumerable<Guid> fileIds, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Delete(DbTransaction transaction, Guid fileId, string key, CancellationToken ct)
+        public Task Delete(IDbTransaction transaction, Guid fileId, string key, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Delete(DbTransaction transaction, Metadata metadata, CancellationToken ct)
+        public Task Delete(IDbTransaction transaction, Metadata metadata, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Metadata>> Get(SqlConnection connection, IEnumerable<Guid> fileIds, CancellationToken ct)
+        public Task<IEnumerable<Metadata>> Get(IDbConnection connection, IEnumerable<Guid> fileIds, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Guid>> GetFileIds(SqlConnection connection, string key, string value, CancellationToken ct)
+        public Task<IEnumerable<Guid>> GetFileIds(IDbConnection connection, string key, string value, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Insert(DbTransaction transaction, Metadata metadata, CancellationToken ct)
+        public Task Insert(IDbTransaction transaction, Metadata metadata, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Insert(DbTransaction transaction, IEnumerable<Metadata> metadata, CancellationToken ct)
+        public Task Insert(IDbTransaction transaction, IEnumerable<Metadata> metadata, CancellationToken ct)
         {
             throw new NotImplementedException();
         }
 
-        public Task Update(DbTransaction transaction, Metadata metadata, CancellationToken ct)
+        public Task Update(IDbTransaction transaction, Metadata metadata, CancellationToken ct)
         {
             throw new NotImplementedException();
         }

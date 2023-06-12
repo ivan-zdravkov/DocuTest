@@ -1,8 +1,6 @@
 ﻿using DocuTest.Application.Interfaces;
 using DocuTest.Data.Main.DAL.Interfaces;
-using System.Data.Common;
-using System.Data.SqlClient;
-using System.Transactions;
+using System.Data;
 
 namespace DocuTest.Application.Services
 {
@@ -10,9 +8,9 @@ namespace DocuTest.Application.Services
     {
         private readonly IFileRepository fileRepository;
         private readonly IMetadataRepository metadataRepository;
-        private readonly ISqlConnectionFactory connectionFactory;
+        private readonly IDbConnectionFactory connectionFactory;
 
-        public FileService(IFileRepository fileRepository, IMetadataRepository metadataRepository, ISqlConnectionFactory connectionFactory)
+        public FileService(IFileRepository fileRepository, IMetadataRepository metadataRepository, IDbConnectionFactory connectionFactory)
         {
             this.fileRepository = fileRepository;
             this.metadataRepository = metadataRepository;
@@ -21,11 +19,11 @@ namespace DocuTest.Application.Services
 
         public async Task<Guid> Insert(Guid documentId, Shared.Models.File file, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -33,24 +31,24 @@ namespace DocuTest.Application.Services
 
                 await this.metadataRepository.Insert(transaction, file.Metadata, ct);
 
-                await transaction.CommitAsync();
+                transaction.Commit();
 
                 return fileId;
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
 
         public async Task Update(Shared.Models.File file, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -64,29 +62,29 @@ namespace DocuTest.Application.Services
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
 
         public async Task Delete(Guid fileId, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
                 await this.metadataRepository.Delete(transaction, fileId, ct);
                 await this.fileRepository.Delete(transaction, fileId, ct);
 
-                await transaction.CommitAsync();
+                transaction.Commit();
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }

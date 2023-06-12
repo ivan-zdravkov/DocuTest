@@ -1,9 +1,10 @@
 ﻿using DocuTest.Data.Main.DAL.Interfaces;
+using System.Data;
 using System.Data.SqlClient;
 
 namespace DocuTest.Data.Main.DAL.Factories
 {
-    public class SqlConnectionFactory : ISqlConnectionFactory
+    public class SqlConnectionFactory : IDbConnectionFactory
     {
         private readonly string connectionString;
 
@@ -12,6 +13,6 @@ namespace DocuTest.Data.Main.DAL.Factories
             this.connectionString = connectionString;
         }
 
-        public SqlConnection Create() => new SqlConnection(this.connectionString); 
+        public IDbConnection Create() => new SqlConnection(this.connectionString); 
     }
 }

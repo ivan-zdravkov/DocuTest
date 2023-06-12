@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DocuTest.Data.Main.DAL\DocuTest.Data.Main.DAL.csproj" />
     <ProjectReference Include="..\DocuTest.Shared\DocuTest.Shared.csproj" />
   </ItemGroup>

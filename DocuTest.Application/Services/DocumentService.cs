@@ -1,8 +1,7 @@
 ﻿using DocuTest.Application.Interfaces;
 using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Shared.Models;
-using System.Data.Common;
-using System.Data.SqlClient;
+using System.Data;
 
 namespace DocuTest.Application.Services
 {
@@ -11,9 +10,9 @@ namespace DocuTest.Application.Services
         private readonly IDocumentRepository documentRepository;
         private readonly IFileRepository fileRepository;
         private readonly IMetadataRepository metadataRepository;
-        private readonly ISqlConnectionFactory connectionFactory;
+        private readonly IDbConnectionFactory connectionFactory;
 
-        public DocumentService(IDocumentRepository documentRepository, IFileRepository fileRepository, IMetadataRepository metadataRepository, ISqlConnectionFactory connectionFactory)
+        public DocumentService(IDocumentRepository documentRepository, IFileRepository fileRepository, IMetadataRepository metadataRepository, IDbConnectionFactory connectionFactory)
         {
             this.documentRepository = documentRepository;
             this.fileRepository = fileRepository;
@@ -26,16 +25,16 @@ namespace DocuTest.Application.Services
             IEnumerable<Document> documents = await this.Get(new[] { documentId }, ct);
 
             if (!documents.Any())
-                throw new Exception($"Document with id {documentId} not found.");
+                throw new ArgumentException($"Document with id {documentId} not found.");
 
             return documents.First();
         }
 
         public async Task<IEnumerable<Document>> Get(IEnumerable<Guid> documentIds, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
             IEnumerable<Document> documents = await this.documentRepository.Get(connection, documentIds, ct);
             IEnumerable<Shared.Models.File> files = await this.fileRepository.Get(connection, documentIds, ct);
@@ -55,9 +54,9 @@ namespace DocuTest.Application.Services
 
         public async Task<IEnumerable<Document>> GetByMetadata(string key, string value, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
             IEnumerable<Guid> fileIds = await this.metadataRepository.GetFileIds(connection, key, value, ct);
             IEnumerable<Guid> documentIds = await this.fileRepository.GetDocumentIds(connection, fileIds, ct);
@@ -67,11 +66,11 @@ namespace DocuTest.Application.Services
 
         public async Task<Guid> Insert(Document document, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -84,26 +83,26 @@ namespace DocuTest.Application.Services
                     await this.metadataRepository.Insert(transaction, file.Metadata, ct);
                 }
 
-                await transaction.CommitAsync();
+                transaction.Commit();
 
                 return documentId;
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Rollback();
                 throw;
             }
         }
 
         public async Task Update(Document document, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
             Document existingDocument = await this.Get(document.Id, ct);
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -113,24 +112,24 @@ namespace DocuTest.Application.Services
                 await UpdateFiles(document, existingDocument, transaction, ct);
                 await DeleteFiles(document, existingDocument, transaction, ct);
 
-                await transaction.CommitAsync();
+                transaction.Commit();
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Rollback();
                 throw;
             }
         }
 
         public async Task Delete(Guid documentId, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
             IEnumerable<Guid> fileIds = await this.fileRepository.GetFileIds(connection, documentId, ct);
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -138,16 +137,16 @@ namespace DocuTest.Application.Services
                 await this.fileRepository.Delete(transaction, fileIds, ct);
                 await this.documentRepository.Delete(transaction, documentId, ct);
 
-                await transaction.CommitAsync();
+                transaction.Commit();
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Rollback();
                 throw;
             }
         }
 
-        private async Task InsertFiles(Document document, Document existingDocument, DbTransaction transaction, CancellationToken ct)
+        private async Task InsertFiles(Document document, Document existingDocument, IDbTransaction transaction, CancellationToken ct)
         {
             IEnumerable<Shared.Models.File> filesToInsert = document.Files.Where(newFile => !existingDocument.Files.Any(existing => existing.Id == newFile.Id));
 
@@ -159,7 +158,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        private async Task UpdateFiles(Document document, Document existingDocument, DbTransaction transaction, CancellationToken ct)
+        private async Task UpdateFiles(Document document, Document existingDocument, IDbTransaction transaction, CancellationToken ct)
         {
             IEnumerable<Shared.Models.File> filesToUpdate = document.Files.Where(newFile => existingDocument.Files.Any(existing => existing.Id == newFile.Id));
 
@@ -175,7 +174,7 @@ namespace DocuTest.Application.Services
             }
         }
 
-        private async Task DeleteFiles(Document document, Document existingDocument, DbTransaction transaction, CancellationToken ct)
+        private async Task DeleteFiles(Document document, Document existingDocument, IDbTransaction transaction, CancellationToken ct)
         {
             IEnumerable<Guid> fileIdsToDelete = existingDocument.Files.Select(f => f.Id).Except(document.Files.Select(f => f.Id));
 

@@ -29,7 +29,7 @@ else
     Console.WriteLine("Data generation skipped.");
 }
 
-builder.Services.AddSingleton<ISqlConnectionFactory>(new SqlConnectionFactory(connectionString));
+builder.Services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionString));
 
 builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
 builder.Services.AddScoped<IFileRepository, FileRepository>();

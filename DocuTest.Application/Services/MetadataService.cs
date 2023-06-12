@@ -1,17 +1,16 @@
 ﻿using DocuTest.Application.Interfaces;
 using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Shared.Models;
-using System.Data.Common;
-using System.Data.SqlClient;
+using System.Data;
 
 namespace DocuTest.Application.Services
 {
     public class MetadataService : IMetadataService
     {
         private readonly IMetadataRepository metadataRepository;
-        private readonly ISqlConnectionFactory connectionFactory;
+        private readonly IDbConnectionFactory connectionFactory;
 
-        public MetadataService(IMetadataRepository metadataRepository, ISqlConnectionFactory connectionFactory)
+        public MetadataService(IMetadataRepository metadataRepository, IDbConnectionFactory connectionFactory)
         {
             this.metadataRepository = metadataRepository;
             this.connectionFactory = connectionFactory;
@@ -19,32 +18,32 @@ namespace DocuTest.Application.Services
 
         public async Task Insert(Metadata metadata, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
                 await this.metadataRepository.Insert(transaction, metadata, ct);
 
-                await transaction.CommitAsync();
+                transaction.Commit();
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
 
         public async Task Update(Metadata metadata, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -52,18 +51,18 @@ namespace DocuTest.Application.Services
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
 
         public async Task Delete(Metadata metadata, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -71,18 +70,18 @@ namespace DocuTest.Application.Services
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
 
         public async Task Delete(Guid fileId, string key, CancellationToken ct)
         {
-            using SqlConnection connection = this.connectionFactory.Create();
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            await connection.OpenAsync();
+            connection.Open();
 
-            DbTransaction transaction = await connection.BeginTransactionAsync();
+            IDbTransaction transaction = connection.BeginTransaction();
 
             try
             {
@@ -90,7 +89,7 @@ namespace DocuTest.Application.Services
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                transaction.Commit();
                 throw;
             }
         }
