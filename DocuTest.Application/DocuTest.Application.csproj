@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DocuTest.Shared\DocuTest.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

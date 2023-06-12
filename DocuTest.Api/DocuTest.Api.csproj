@@ -11,11 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DocuTest.Application\DocuTest.Application.csproj" />
     <ProjectReference Include="..\DocuTest.Data.Main.DAL\DocuTest.Data.Main.DAL.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\DocuTest.Shared\DocuTest.Shared.csproj" />
   </ItemGroup>
 
 </Project>

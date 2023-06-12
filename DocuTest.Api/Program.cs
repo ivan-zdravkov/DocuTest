@@ -1,3 +1,5 @@
+using DocuTest.Application.Interfaces;
+using DocuTest.Application.Services;
 using DocuTest.Data.Main.DAL.Generators;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +25,10 @@ else
 {
     Console.WriteLine("Data generation skipped.");
 }
+
+builder.Services.AddScoped<IMetadataService, MetadataService>();
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 
 var app = builder.Build();
 

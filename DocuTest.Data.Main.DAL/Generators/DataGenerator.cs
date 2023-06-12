@@ -241,10 +241,9 @@ public static class DataGenerator
         {
             command.Transaction = transaction;
             command.CommandText = @"
-                INSERT INTO [dbo].[Metadata] ([Id], [FileId], [Key], [Value])
-                VALUES (@Id, @FileId, @Key, @Value)";
+                INSERT INTO [dbo].[Metadata] ([FileId], [Key], [Value])
+                VALUES (@FileId, @Key, @Value)";
 
-            command.Parameters.AddWithValue("@Id", Guid.NewGuid());
             command.Parameters.AddWithValue("@FileId", fileId);
             command.Parameters.AddWithValue("@Key", key);
             command.Parameters.AddWithValue("@Value", Guid.NewGuid());
