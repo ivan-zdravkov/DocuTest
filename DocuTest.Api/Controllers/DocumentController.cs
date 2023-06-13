@@ -26,7 +26,7 @@ namespace DocuTest.Api.Controllers
             await this.documentService.GetByMetadata(key, value, ct);
 
         [HttpPost]
-        public async Task<Guid> Create(Document document, CancellationToken ct) =>
+        public async Task<Guid> Insert(Document document, CancellationToken ct) =>
             await this.documentService.Insert(document, ct);
 
         [HttpPut]

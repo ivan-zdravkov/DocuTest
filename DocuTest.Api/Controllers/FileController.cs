@@ -15,9 +15,8 @@ namespace DocuTest.Api.Controllers
         }
 
         [HttpPost]
-        [Route("{documentId}")]
-        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file, CancellationToken ct) =>
-            await this.fileService.Insert(documentId, file, ct);
+        public async Task<Guid> Insert(Shared.Models.File file, CancellationToken ct) =>
+            await this.fileService.Insert(file, ct);
 
         [HttpPut]
         public async Task Update(Shared.Models.File file, CancellationToken ct) =>

@@ -32,7 +32,7 @@ namespace DocuTest.Data.Main.DAL.Repositories
         public async Task<IEnumerable<Shared.Models.File>> Get(IDbConnection connection, IEnumerable<Guid> documentIds, CancellationToken ct) =>
             await connection.QueryAsync<Shared.Models.File>(new CommandDefinition(
                 commandText: @$"
-                    SELECT f.*
+                    SELECT f.*, df.[DocumentId] As [DocumentId]
                     FROM [dbo].[File] f
                     JOIN [dbo].[DocumentFile] df ON df.[FileId] = f.[Id]
                     WHERE df.[DocumentId] IN @documentIds",
@@ -54,28 +54,25 @@ namespace DocuTest.Data.Main.DAL.Repositories
                 cancellationToken: ct)
             );
 
-        public async Task<Guid> Insert(IDbTransaction transaction, Guid documentId, Shared.Models.File file, CancellationToken ct)
+        public async Task<Guid> Insert(IDbTransaction transaction, Shared.Models.File file, CancellationToken ct)
         {
-            Guid fileId = await transaction.Connection.ExecuteScalarAsync<Guid>(new CommandDefinition(
-                commandText: @$"
-                    INSERT INTO [dbo].[File] ([Name], [Extension], [Content])
-                    OUTPUT INSERTED.[Id]
-                    VALUES (@Name, @Extension, @Content)",
+            file.Id = Guid.NewGuid();
+
+            await transaction.Connection.ExecuteAsync(new CommandDefinition(
+                commandText: @$"INSERT INTO [dbo].[File] ([Id], [Name], [Extension], [Content]) VALUES (@Id, @Name, @Extension, @Content)",
                 transaction: transaction,
-                parameters: new { file },
+                parameters: file,
                 cancellationToken: ct)
             );
-
-            file.Id = fileId;
 
             await transaction.Connection.ExecuteAsync(new CommandDefinition(
                 commandText: $"INSERT INTO [dbo].[DocumentFile] ([DocumentId], [FileId]) VALUES (@documentId, @fileId)",
                 transaction: transaction,
-                parameters: new { documentId, fileId },
+                parameters: new { documentId = file.DocumentId, fileId = file.Id },
                 cancellationToken: ct)
             );
 
-            return fileId;
+            return file.Id;
         }
 
         public async Task Update(IDbTransaction transaction, Shared.Models.File file, CancellationToken ct) =>

@@ -78,7 +78,12 @@ namespace DocuTest.Application.Services
 
                 foreach (Shared.Models.File file in document.Files)
                 {
-                    Guid fileId = await this.fileRepository.Insert(transaction, documentId, file, ct);
+                    file.DocumentId = documentId;
+
+                    Guid fileId = await this.fileRepository.Insert(transaction, file, ct);
+
+                    foreach (Metadata metadata in file.Metadata)
+                        metadata.FileId = fileId;
 
                     await this.metadataRepository.Insert(transaction, file.Metadata, ct);
                 }
@@ -152,7 +157,9 @@ namespace DocuTest.Application.Services
 
             foreach (Shared.Models.File file in filesToInsert)
             {
-                Guid fileId = await this.fileRepository.Insert(transaction, document.Id, file, ct);
+                file.DocumentId = document.Id;
+
+                Guid fileId = await this.fileRepository.Insert(transaction, file, ct);
 
                 await this.metadataRepository.Insert(transaction, file.Metadata, ct);
             }

@@ -1,5 +1,6 @@
 ﻿using DocuTest.Application.Interfaces;
 using DocuTest.Data.Main.DAL.Interfaces;
+using DocuTest.Shared.Models;
 using System.Data;
 
 namespace DocuTest.Application.Services
@@ -17,7 +18,7 @@ namespace DocuTest.Application.Services
             this.connectionFactory = connectionFactory;
         }
 
-        public async Task<Guid> Insert(Guid documentId, Shared.Models.File file, CancellationToken ct)
+        public async Task<Guid> Insert(Shared.Models.File file, CancellationToken ct)
         {
             using IDbConnection connection = this.connectionFactory.Create();
 
@@ -27,7 +28,10 @@ namespace DocuTest.Application.Services
 
             try
             {
-                Guid fileId = await this.fileRepository.Insert(transaction, documentId, file, ct);
+                Guid fileId = await this.fileRepository.Insert(transaction, file, ct);
+
+                foreach (Metadata metadata in file.Metadata)
+                    metadata.FileId = fileId;
 
                 await this.metadataRepository.Insert(transaction, file.Metadata, ct);
 

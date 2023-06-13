@@ -32,19 +32,16 @@ namespace DocuTest.Data.Main.DAL.Repositories
 
         public async Task<Guid> Insert(IDbTransaction transaction, Document document, CancellationToken ct)
         {
-            Guid documentId = await transaction.Connection.ExecuteScalarAsync<Guid>(new CommandDefinition(
-                commandText: @$"
-                    INSERT INTO [dbo].[Document] ([Name], [DocumentTypeId], [UserId])
-                    OUTPUT INSERTED.[Id]
-                    VALUES (@Name, @DocumentTypeId, @UserId)",
+            document.Id = Guid.NewGuid();
+
+            await transaction.Connection.ExecuteAsync(new CommandDefinition(
+                commandText: @$"INSERT INTO [dbo].[Document] ([Id], [Name], [DocumentTypeId], [UserId])  VALUES (@Id, @Name, @DocumentTypeId, @UserId)",
                 transaction: transaction,
                 parameters: document,
                 cancellationToken: ct)
             );
 
-            document.Id = documentId;
-
-            return documentId;
+            return document.Id;
         }
 
         public async Task Update(IDbTransaction transaction, Document document, CancellationToken ct) =>
