@@ -1,34 +1,59 @@
-﻿using DocuTest.Data.Main.DAL.Interfaces;
+﻿using Dapper;
+using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Shared.Models;
 using System.Data;
+using System.Transactions;
 
 namespace DocuTest.Data.Main.DAL.Repositories
 {
     public class DocumentRepository : IDocumentRepository
     {
-        public Task Delete(IDbTransaction transaction, Guid documentId, CancellationToken ct)
+        public async Task Delete(IDbTransaction transaction, Guid documentId, CancellationToken ct) =>
+            await transaction.Connection.ExecuteAsync(new CommandDefinition(
+                commandText: $"DELETE FROM [dbo].[Document] WHERE [Id] = @documentId",
+                transaction: transaction,
+                parameters: new { documentId },
+                cancellationToken: ct)
+            );
+
+        public async Task<Document> Get(IDbConnection connection, Guid documentId, CancellationToken ct) =>
+            await connection.QueryFirstOrDefaultAsync<Document>(new CommandDefinition(
+                commandText: $"SELECT TOP 1 * FROM [dbo].[Document] WHERE [Id] = @documentId",
+                parameters: new { documentId },
+                cancellationToken: ct)
+            );
+
+        public async Task<IEnumerable<Document>> Get(IDbConnection connection, IEnumerable<Guid> documentIds, CancellationToken ct) =>
+            await connection.QueryAsync<Document>(new CommandDefinition(
+                commandText: $"SELECT * FROM [dbo].[Document] WHERE [Id] IN @documentIds",
+                parameters: new { documentIds },
+                cancellationToken: ct)
+            );
+
+        public async Task<Guid> Insert(IDbTransaction transaction, Document document, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            Guid documentId = await transaction.Connection.ExecuteScalarAsync<Guid>(new CommandDefinition(
+                commandText: @$"
+                    INSERT INTO [dbo].[Document] ([Name], [DocumentTypeId], [UserId])
+                    OUTPUT INSERTED.[Id]
+                    VALUES (@Name, @DocumentTypeId, @UserId)",
+                transaction: transaction,
+                parameters: document,
+                cancellationToken: ct)
+            );
+
+            document.Id = documentId;
+
+            return documentId;
         }
 
-        public Task<Document> Get(IDbConnection connection, Guid documentId, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task Update(IDbTransaction transaction, Document document, CancellationToken ct) =>
+            await transaction.Connection.ExecuteAsync(new CommandDefinition(
+                commandText: $"UPDATE [dbo].[Document] SET [Name] = @Name, [DocumentTypeId] = @DocumentTypeId, [UserId] = @UserId WHERE [Id] = @Id",
+                transaction: transaction,
+                parameters: document,
+                cancellationToken: ct)
+            );
 
-        public Task<IEnumerable<Document>> Get(IDbConnection connection, IEnumerable<Guid> documentIds, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Guid> Insert(IDbTransaction transaction, Document document, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Update(IDbTransaction transaction, Document document, CancellationToken ct)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
