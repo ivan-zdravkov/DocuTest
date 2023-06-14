@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using DocuTest.Shared.Enums;
+using System.Data.SqlClient;
 
 namespace DocuTest.Data.Main.DAL.Generators;
 
@@ -9,10 +10,10 @@ public static class DataGenerator
 
     private static IList<(Guid Id, string Name)> documentTypes = new List<(Guid Id, string Name)>()
     {
-        (new Guid("687E478F-B7BE-45F2-AD6A-6A716FC5465C"), "Mail"),
-        (new Guid("264DC01A-9660-4E8F-823B-720C4F81F05C"), "CV"),
-        (new Guid("4D4F70FC-F6BE-47A7-9962-EE354DB570F0"), "Invoice"),
-        (new Guid("C1B18E83-10F0-487C-99D7-E23A20BB2455"), "Other")
+        (new Guid(DocumentType.Mail), "Mail"),
+        (new Guid(DocumentType.CV), "CV"),
+        (new Guid(DocumentType.Invoice), "Invoice"),
+        (new Guid(DocumentType.Other), "Other")
     };
 
     private static IList<(Guid Id, string Name, string Email)> users = new List<(Guid Id, string Name, string Email)>()
