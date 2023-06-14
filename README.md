@@ -14,8 +14,8 @@ Also consider the following:
 - ✓ Service calls should accept/return JSON obects;
 
 ## Optional Features
-- ToDo: Suggest or implement a model for restricting document access based on the user, e.g. accountants can Insert/Update/Delete invoices, while others can only read them;
-- ToDo: Use something simple to demonstrate the idea, e.g. hard code the list of users;
+- ✓ Suggest or implement a model for restricting document access based on the user, e.g. accountants can Insert/Update/Delete invoices, while others can only read them;
+- ✓ Use something simple to demonstrate the idea, e.g. hard code the list of users;
 
 # Tables
 ## User
@@ -85,3 +85,15 @@ Also consider the following:
 - Using specialized models for Get/Insert/Update opperations;
 - Introducing seperate Request/Response/Exchange models to handle API layer declarative functionality like serialization or data annotations for validation;
 - Introducing sorting and paging for the `get-by-metadata` route;
+- Getting a document will not return an existing document if the strategy does not allow fetching it. Having to actually check if the document exists in addition to whether the user can fetch it so that a more meaningfull exception is thrown produces a performance hit.
+
+## Data Strategy
+The problem is knowing whether a certain user has the ability to read or write a certain resource, based on the type of the resource itself. Since we have a dependency on the resource type itself, the out of the box role authentication mechanism of MVC will not suffice.
+
+To solve the issue, a custom strategy framework is introduced:
+- The [IDataStrategy](./DocuTest.Shared/Interfaces/IDataStrategy.cs)'s role is to define the interface for building an SQL expression as well as to be able to accept the entity its generalized for and decide whether the needed action is allowed.
+- The abstract [SqlStrategy](./DocuTest.Shared/Strategies/SqlStrategy.cs) implements the [IDataStrategy](./DocuTest.Shared/Interfaces/IDataStrategy.cs), gathers the record requirements passed through the constructor and builds the SQL expression.
+- The [IDocumentReadStrategy](./DocuTest.Application/Interfaces/IDocumentReadStrategy.cs) and [IDocumentWriteStrategy](./DocuTest.Application/Interfaces/IDocumentWriteStrategy.cs) define the specific entity action interface, allowing for multiple specific strategies to be implemented, based on varying criteria.
+- The [DocumentRoleReadStrategy](./DocuTest.Application/Strategies/DocumentRoleReadStrategy.cs) and [DocumentRoleWriteStrategy](./DocuTest.Application/Strategies/DocumentWriteReadStrategy.cs) define the record requirements based on the user's role information fetched from the [IUserContext](./DocuTest.Shared/Interfaces/IUserContext.cs).
+
+Having this mechanism allows us to have different strategy definitions for every needed entity action as well as multiple implementations for every definition, based on the verying criteria we might have to make an access decision. In an architectural sense, it is the DAL's responsibility to utilize the strategies accordingly by using the generated SQL expressions for read actions or by checking the entities for eligibility, before write actions. It's the Service layer's responsibility to pick and pass the correct strategy, in line with its intended use - acting as a Business layer and orchestrator of rules and actions.

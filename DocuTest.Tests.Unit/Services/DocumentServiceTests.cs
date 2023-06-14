@@ -1,4 +1,5 @@
-﻿using DocuTest.Application.Services;
+﻿using DocuTest.Application.Interfaces;
+using DocuTest.Application.Services;
 using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Shared.Models;
 using Moq;
@@ -33,6 +34,9 @@ namespace DocuTest.Tests.Unit.Services
 
         private Mock<IDbConnection> connectionMock = new Mock<IDbConnection>();
         private Mock<IDbTransaction> transactionMock = new Mock<IDbTransaction>();
+
+        private Mock<IDocumentReadStrategy> documentReadStrategyMock = new Mock<IDocumentReadStrategy>();
+        private Mock<IDocumentWriteStrategy> documentWriteStrategyMock = new Mock<IDocumentWriteStrategy>();
 
         private Mock<IDbConnectionFactory> connectionFactoryMock = new Mock<IDbConnectionFactory>();
         private Mock<IDocumentRepository> documentRepositoryMock = new Mock<IDocumentRepository>();
@@ -120,8 +124,8 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id }, CancellationToken.None))
-                .ReturnsAsync(new Document[] { d1 });
+                .Setup(x => x.Get(this.connectionMock.Object, d1.Id, this.documentReadStrategyMock.Object, CancellationToken.None))
+                .ReturnsAsync(d1);
 
             this.fileRepositoryMock
                 .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id }, CancellationToken.None))
@@ -132,6 +136,8 @@ namespace DocuTest.Tests.Unit.Services
                 .ReturnsAsync(d1.Files.SelectMany(f => f.Metadata).ToArray());
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -150,6 +156,8 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -165,7 +173,7 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id, d2.Id }, CancellationToken.None))
+                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id, d2.Id }, this.documentReadStrategyMock.Object, CancellationToken.None))
                 .ReturnsAsync(new Document[] { d1, d2 });
 
             this.fileRepositoryMock
@@ -177,6 +185,8 @@ namespace DocuTest.Tests.Unit.Services
                 .ReturnsAsync(d1.Files.Union(d2.Files).SelectMany(f => f.Metadata).ToArray());
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -195,7 +205,7 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id, d2.Id }, CancellationToken.None))
+                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id, d2.Id }, this.documentReadStrategyMock.Object, CancellationToken.None))
                 .ReturnsAsync(new Document[] { d1, d2 });
 
             this.fileRepositoryMock
@@ -215,6 +225,8 @@ namespace DocuTest.Tests.Unit.Services
                 .ReturnsAsync(d1.Files.Union(d2.Files).SelectMany(f => f.Metadata).ToArray());
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -233,15 +245,15 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Insert(this.transactionMock.Object, d1, CancellationToken.None))
+                .Setup(x => x.Insert(this.transactionMock.Object, d1, this.documentWriteStrategyMock.Object, CancellationToken.None))
                 .ReturnsAsync(d1.Id);
 
             this.fileRepositoryMock
-                .Setup(x => x.Insert(this.transactionMock.Object, d1.Id, d1f1, CancellationToken.None))
+                .Setup(x => x.Insert(this.transactionMock.Object, d1f1, CancellationToken.None))
                 .ReturnsAsync(d1f1.Id);
 
             this.fileRepositoryMock
-                .Setup(x => x.Insert(this.transactionMock.Object, d1.Id, d1f2, CancellationToken.None))
+                .Setup(x => x.Insert(this.transactionMock.Object, d1f2, CancellationToken.None))
                 .ReturnsAsync(d1f2.Id);
 
             this.metadataRepositoryMock
@@ -249,6 +261,8 @@ namespace DocuTest.Tests.Unit.Services
                 .Verifiable();
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -259,8 +273,8 @@ namespace DocuTest.Tests.Unit.Services
             Guid result = await documentServiceSUT.Insert(d1, CancellationToken.None);
 
             //Assert
-            this.documentRepositoryMock.Verify(x => x.Insert(this.transactionMock.Object, It.IsAny<Document>(), CancellationToken.None), Times.Once);
-            this.fileRepositoryMock.Verify(x => x.Insert(this.transactionMock.Object, It.Is<Guid>(x => x == d1.Id), It.IsAny<Shared.Models.File>(), CancellationToken.None), Times.Exactly(2));
+            this.documentRepositoryMock.Verify(x => x.Insert(this.transactionMock.Object, It.IsAny<Document>(), this.documentWriteStrategyMock.Object, CancellationToken.None), Times.Once);
+            this.fileRepositoryMock.Verify(x => x.Insert(this.transactionMock.Object, It.IsAny<Shared.Models.File>(), CancellationToken.None), Times.Exactly(2));
             this.metadataRepositoryMock.Verify(x => x.Insert(this.transactionMock.Object, It.Is<IEnumerable<Metadata>>(x => x.Count() == 2), CancellationToken.None), Times.Exactly(2));
 
             this.transactionMock.Verify(x => x.Commit(), Times.Once);
@@ -273,10 +287,12 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Insert(this.transactionMock.Object, d1, CancellationToken.None))
+                .Setup(x => x.Insert(this.transactionMock.Object, d1, this.documentWriteStrategyMock.Object, CancellationToken.None))
                 .Throws<ArgumentException>();
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -294,8 +310,8 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             this.documentRepositoryMock
-                .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id }, CancellationToken.None))
-                .ReturnsAsync(new Document[] { d1 });
+                .Setup(x => x.Get(this.connectionMock.Object, d1.Id, this.documentReadStrategyMock.Object, CancellationToken.None))
+                .ReturnsAsync(d1);
 
             this.fileRepositoryMock
                 .Setup(x => x.Get(this.connectionMock.Object, new Guid[] { d1.Id }, CancellationToken.None))
@@ -306,10 +322,12 @@ namespace DocuTest.Tests.Unit.Services
                 .ReturnsAsync(d1.Files.SelectMany(f => f.Metadata).ToArray());
 
             this.documentRepositoryMock
-                .Setup(x => x.Update(this.transactionMock.Object, d1, CancellationToken.None))
+                .Setup(x => x.Update(this.transactionMock.Object, d1, this.documentWriteStrategyMock.Object, CancellationToken.None))
                 .Verifiable();
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -320,7 +338,7 @@ namespace DocuTest.Tests.Unit.Services
             await documentServiceSUT.Update(d1, CancellationToken.None);
 
             //Assert
-            this.documentRepositoryMock.Verify(x => x.Update(this.transactionMock.Object, It.Is<Document>(x => x == d1), CancellationToken.None), Times.Once);
+            this.documentRepositoryMock.Verify(x => x.Update(this.transactionMock.Object, It.Is<Document>(x => x == d1), this.documentWriteStrategyMock.Object, CancellationToken.None), Times.Once);
 
             this.transactionMock.Verify(x => x.Commit(), Times.Once);
         }
@@ -330,6 +348,8 @@ namespace DocuTest.Tests.Unit.Services
         {
             //Arrange
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -349,6 +369,8 @@ namespace DocuTest.Tests.Unit.Services
                 .ReturnsAsync(d1.Files.Select(f => f.Id));
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,
@@ -361,7 +383,7 @@ namespace DocuTest.Tests.Unit.Services
             //Assert
             this.metadataRepositoryMock.Verify(x => x.Delete(this.transactionMock.Object, It.Is<IEnumerable<Guid>>(x => x.SequenceEqual(d1.Files.Select(f => f.Id))), CancellationToken.None), Times.Once);
             this.fileRepositoryMock.Verify(x => x.Delete(this.transactionMock.Object, It.Is<IEnumerable<Guid>>(x => x.SequenceEqual(d1.Files.Select(f => f.Id))), CancellationToken.None), Times.Once);
-            this.documentRepositoryMock.Verify(x => x.Delete(this.transactionMock.Object, It.Is<Guid>(x => x == d1.Id), CancellationToken.None), Times.Once);
+            this.documentRepositoryMock.Verify(x => x.Delete(this.transactionMock.Object, It.Is<Guid>(x => x == d1.Id), this.documentWriteStrategyMock.Object, CancellationToken.None), Times.Once);
 
             this.transactionMock.Verify(x => x.Commit(), Times.Once);
         }
@@ -375,6 +397,8 @@ namespace DocuTest.Tests.Unit.Services
                 .Throws<ArgumentException>();
 
             DocumentService documentServiceSUT = new DocumentService(
+                this.documentReadStrategyMock.Object,
+                this.documentWriteStrategyMock.Object,
                 this.documentRepositoryMock.Object,
                 this.fileRepositoryMock.Object,
                 this.metadataRepositoryMock.Object,

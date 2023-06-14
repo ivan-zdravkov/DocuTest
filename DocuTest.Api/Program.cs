@@ -1,10 +1,13 @@
+using DocuTest.Application.Contexts;
 using DocuTest.Application.Interfaces;
 using DocuTest.Application.Services;
+using DocuTest.Application.Strategies;
 using DocuTest.Data.Main.DAL.Factories;
 using DocuTest.Data.Main.DAL.Generators;
 using DocuTest.Data.Main.DAL.Interfaces;
 using DocuTest.Data.Main.DAL.Repositories;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using DocuTest.Shared.Enums;
+using DocuTest.Shared.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +36,11 @@ else
 }
 
 builder.Services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionString));
+
+builder.Services.AddScoped<DocuTest.Shared.Interfaces.IUserContext>(services => new UserContext(Guid.NewGuid(), "Test User", "me@example.con", Role.Admin));
+
+builder.Services.AddScoped<IDocumentReadStrategy>(services => new DocumentRoleReadStrategy(services.GetService<IUserContext>()!));
+builder.Services.AddScoped<IDocumentWriteStrategy>(services => new DocumentRoleWriteStrategy(services.GetService<IUserContext>()!));
 
 builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
 builder.Services.AddScoped<IFileRepository, FileRepository>();

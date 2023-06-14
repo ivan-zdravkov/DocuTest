@@ -7,13 +7,23 @@ namespace DocuTest.Application.Services
 {
     public class DocumentService : IDocumentService
     {
+        private readonly IDocumentReadStrategy documentReadStrategy;
+        private readonly IDocumentWriteStrategy documentWriteStrategy;
         private readonly IDocumentRepository documentRepository;
         private readonly IFileRepository fileRepository;
         private readonly IMetadataRepository metadataRepository;
         private readonly IDbConnectionFactory connectionFactory;
 
-        public DocumentService(IDocumentRepository documentRepository, IFileRepository fileRepository, IMetadataRepository metadataRepository, IDbConnectionFactory connectionFactory)
+        public DocumentService(
+            IDocumentReadStrategy documentReadStrategy,
+            IDocumentWriteStrategy documentWriteStrategy,
+            IDocumentRepository documentRepository,
+            IFileRepository fileRepository,
+            IMetadataRepository metadataRepository,
+            IDbConnectionFactory connectionFactory)
         {
+            this.documentReadStrategy = documentReadStrategy;
+            this.documentWriteStrategy = documentWriteStrategy;
             this.documentRepository = documentRepository;
             this.fileRepository = fileRepository;
             this.metadataRepository = metadataRepository;
@@ -22,12 +32,16 @@ namespace DocuTest.Application.Services
 
         public async Task<Document> Get(Guid documentId, CancellationToken ct)
         {
-            IEnumerable<Document> documents = await this.Get(new[] { documentId }, ct);
+            using IDbConnection connection = this.connectionFactory.Create();
 
-            if (!documents.Any())
+            connection.Open();
+
+            Document document = await this.documentRepository.Get(connection, documentId, this.documentReadStrategy, ct);
+
+            if (document == null)
                 throw new ArgumentException($"Document with id {documentId} not found.");
 
-            return documents.First();
+            return document;
         }
 
         public async Task<IEnumerable<Document>> Get(IEnumerable<Guid> documentIds, CancellationToken ct)
@@ -36,7 +50,7 @@ namespace DocuTest.Application.Services
 
             connection.Open();
 
-            IEnumerable<Document> documents = await this.documentRepository.Get(connection, documentIds, ct);
+            IEnumerable<Document> documents = await this.documentRepository.Get(connection, documentIds, this.documentReadStrategy, ct);
             IEnumerable<Shared.Models.File> files = await this.fileRepository.Get(connection, documentIds, ct);
 
             IEnumerable<Guid> fileIds = files.Select(f => f.Id);
@@ -74,7 +88,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                Guid documentId = await this.documentRepository.Insert(transaction, document, ct);
+                Guid documentId = await this.documentRepository.Insert(transaction, document, this.documentWriteStrategy, ct);
 
                 foreach (Shared.Models.File file in document.Files)
                 {
@@ -111,7 +125,7 @@ namespace DocuTest.Application.Services
 
             try
             {
-                await this.documentRepository.Update(transaction, document, ct);
+                await this.documentRepository.Update(transaction, document, this.documentWriteStrategy, ct);
 
                 await InsertFiles(document, existingDocument, transaction, ct);
                 await UpdateFiles(document, existingDocument, transaction, ct);
@@ -140,7 +154,7 @@ namespace DocuTest.Application.Services
             {
                 await this.metadataRepository.Delete(transaction, fileIds, ct);
                 await this.fileRepository.Delete(transaction, fileIds, ct);
-                await this.documentRepository.Delete(transaction, documentId, ct);
+                await this.documentRepository.Delete(transaction, documentId, this.documentWriteStrategy, ct);
 
                 transaction.Commit();
             }
