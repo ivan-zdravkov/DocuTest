@@ -16,6 +16,6 @@ namespace DocuTest.Application.Strategies
             (DocumentType.Other, user.InRole(Role.User, Role.Accountant, Role.Admin))
         ) { }
 
-        public override bool Allows(Document value) => base.Records.Any(record => record.Value == value.DocumentTypeId.ToString());
+        public override bool Allows(Document value) => base.Records.Any(record => record.Value == value.DocumentTypeId.ToString() && record.Take);
     }
 }

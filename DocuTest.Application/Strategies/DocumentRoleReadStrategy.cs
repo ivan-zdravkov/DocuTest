@@ -17,6 +17,6 @@ namespace DocuTest.Application.Strategies
         )
         { }
 
-        public override bool Allows(Document value) => base.Records.Any(record => record.Value == value.DocumentTypeId.ToString());
+        public override bool Allows(Document value) => base.Records.Any(record => record.Value == value.DocumentTypeId.ToString() && record.Take);
     }
 }
